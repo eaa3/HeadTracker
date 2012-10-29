@@ -1,0 +1,8 @@
+# .gitignore
+
+/Release
+/Debug
+/ipch
+/HeadTracker/Release
+/HeadTracker/Debug
+HeadTracker.sdf

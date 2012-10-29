@@ -39,13 +39,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opencv\build\x86\vc10\lib;E:\Workspace\HeadTracker\HeadTracker\glut;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opencv\build\x86\vc10\lib;E:\Workspace\HeadTracker\HeadTracker\glut;$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,6 +59,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_calib3d242d.lib;opencv_contrib242d.lib;opencv_core242d.lib;opencv_features2d242d.lib;opencv_flann242d.lib;opencv_gpu242d.lib;opencv_haartraining_engined.lib;opencv_highgui242d.lib;opencv_imgproc242d.lib;opencv_legacy242d.lib;opencv_ml242d.lib;opencv_nonfree242d.lib;opencv_objdetect242d.lib;opencv_photo242d.lib;opencv_stitching242d.lib;opencv_ts242d.lib;opencv_video242d.lib;opencv_videostab242d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,16 +77,60 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_calib3d242.lib;opencv_contrib242.lib;opencv_core242.lib;opencv_features2d242.lib;opencv_flann242.lib;opencv_gpu242.lib;opencv_haartraining_engine.lib;opencv_highgui242.lib;opencv_imgproc242.lib;opencv_legacy242.lib;opencv_ml242.lib;opencv_nonfree242.lib;opencv_objdetect242.lib;opencv_photo242.lib;opencv_stitching242.lib;opencv_ts242.lib;opencv_video242.lib;opencv_videostab242.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model3D.cpp" />
+    <ClCompile Include="tld\boundingbox.cpp" />
+    <ClCompile Include="tld\clusterer.cpp" />
+    <ClCompile Include="tld\detector.cpp" />
+    <ClCompile Include="tld\disjointset.cpp" />
+    <ClCompile Include="tld\feature.cpp" />
+    <ClCompile Include="tld\fern.cpp" />
+    <ClCompile Include="tld\ffclassifier.cpp" />
+    <ClCompile Include="tld\MedianFlowTracker.cpp" />
+    <ClCompile Include="tld\mftracker\bb.cpp" />
+    <ClCompile Include="tld\mftracker\bb_predict.cpp" />
+    <ClCompile Include="tld\mftracker\fbtrack.cpp" />
+    <ClCompile Include="tld\mftracker\lk.cpp" />
+    <ClCompile Include="tld\mftracker\median.cpp" />
+    <ClCompile Include="tld\nnclassifier.cpp" />
+    <ClCompile Include="tld\normalizedpatch.cpp" />
+    <ClCompile Include="tld\params.cpp" />
+    <ClCompile Include="tld\Predator.cpp" />
+    <ClCompile Include="tld\tld_util.cpp" />
+    <ClCompile Include="tld\twobitbp.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model3D.h" />
+    <ClInclude Include="tld\boundingbox.h" />
+    <ClInclude Include="tld\clusterer.h" />
+    <ClInclude Include="tld\detector.h" />
+    <ClInclude Include="tld\disjointset.h" />
+    <ClInclude Include="tld\feature.h" />
+    <ClInclude Include="tld\fern.h" />
+    <ClInclude Include="tld\ffclassifier.h" />
+    <ClInclude Include="tld\includes.h" />
+    <ClInclude Include="tld\MedianFlowTracker.h" />
+    <ClInclude Include="tld\mftracker\bb.h" />
+    <ClInclude Include="tld\mftracker\bb_predict.h" />
+    <ClInclude Include="tld\mftracker\fbtrack.h" />
+    <ClInclude Include="tld\mftracker\lk.h" />
+    <ClInclude Include="tld\mftracker\median.h" />
+    <ClInclude Include="tld\nnclassifier.h" />
+    <ClInclude Include="tld\normalizedpatch.h" />
+    <ClInclude Include="tld\params.h" />
+    <ClInclude Include="tld\Predator.h" />
+    <ClInclude Include="tld\tld_util.h" />
+    <ClInclude Include="tld\twobitbp.h" />
     <ClInclude Include="Vector3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tld\tldConfig.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

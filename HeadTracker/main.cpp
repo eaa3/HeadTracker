@@ -7,12 +7,13 @@
 #include <glut.h>
 #include <opencv2/opencv.hpp>
 #include "Model3D.h"
+#include "tld/Predator.h"
 
 
 Model3D m;
 
-const int FRAME_W = 640;
-const int FRAME_H = 480;
+const int FRAMEW = 640;
+const int FRAMEH = 480;
 bool* key = new bool[256];
 float x = 100,y,z = -200;
 
@@ -118,7 +119,7 @@ void init (void)
 	/* initialize viewing values */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, double(FRAME_W)/FRAME_H, 10, 500);
+	gluPerspective(45.0, double(FRAMEW)/FRAMEH, 10, 500);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
 	atexit(deinit);
 	glutInit(&argc, argv);
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize (FRAME_W, FRAME_H);
+	glutInitWindowSize (FRAMEW, FRAMEH);
 	glutInitWindowPosition (100, 100);
 	glutCreateWindow ("Voxar - HeadTracker");
 	init ();
