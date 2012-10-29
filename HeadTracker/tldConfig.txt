@@ -1,0 +1,32 @@
+//Screen Resolution
+#FRAME_W=640
+#FRAME_H=480
+#FPS=30
+
+//Fern Forest params
+#N_FERNS=10
+#N_FEATURES=5
+#MIN_SCALE=0.100000
+#DECISION_THRESHOLD=0.500000
+
+//P-N Criteria of deciding if a bb is positive or not.
+#MIN_POSITIVE_OVERLAP=0.600000
+#MAX_NEGATIVE_OVERLAP=0.200000
+
+//Clustering overlapping condition
+#CUTOFF=0.500000
+
+//Online model patch dimension
+#NORMALIZED_PATCH_DIM=15
+
+//Detector params
+#MIN_BB=24
+#MIN_WINDOW_SCALE=-4
+#MAX_WINDOW_SCALE=9
+#BASE_WINDOW_SCALE=1
+#SHIFT=0.100000
+
+//1-NN Classifier params
+#THETA_TP=0.650000
+#THETA_FP=0.500000
+

@@ -10,7 +10,13 @@
 #include "tld/Predator.h"
 
 
+
+using namespace tld;
+
+
 Model3D m;
+Params p(TLD_CONFIG_FILE);
+Predator predator(&p);
 
 const int FRAMEW = 640;
 const int FRAMEH = 480;
@@ -114,6 +120,7 @@ void display(void)
 void init (void)
 {
 	
+
 	/* select clearing (background) color */
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	/* initialize viewing values */

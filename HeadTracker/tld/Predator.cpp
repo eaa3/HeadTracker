@@ -47,7 +47,7 @@ Predator::~Predator()
     delete this->nnClassifier;
     delete this->detector;
     delete this->tracker;
-    delete this->params;
+    //delete this->params;
 }
 
 
