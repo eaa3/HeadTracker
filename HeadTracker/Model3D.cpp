@@ -36,6 +36,7 @@ void Model3D::load(string filename)
 
 	while( getline(in, line) )
 	{
+		
 		if( line[0] == '#' ) continue;
 
 		if( line[0] == 'v' && line[1] == 'n' )
@@ -66,6 +67,7 @@ void Model3D::load(string filename)
 
 			this->face.push_back(facetemp);
 		}
+
 
 	}
 

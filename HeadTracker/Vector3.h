@@ -13,6 +13,7 @@ class Vector3
 
         static const Vector3 ZERO;
 
+		//Rotation type
         static const int R_X;
         static const int R_Y;
         static const int R_Z;

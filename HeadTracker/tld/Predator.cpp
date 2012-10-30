@@ -335,7 +335,7 @@ void Predator::learn()
     this->detector->nnClassifier->learn(patches);
 
     //cout << "NN has now " << detectorCascade->nnClassifier->truePositives->size() << " positives and " << detectorCascade->nnClassifier->falsePositives->size() << " negatives.\n";
-    printf("YES WE'VE LEARNT!\n");
+    //printf("YES WE'VE LEARNT!\n");
 
 	delete [] overlaps;
 }
@@ -358,7 +358,7 @@ void Predator::fuseHypotheses()
         detectedBB.post = this->ffClassifier->classify(this->integralImg, detectedBB);
         this->detectionHistory.push_back(detectedBB);
 
-        printf("DETECTION HISTORY SIZE %d\n", this->detectionHistory.size());
+        //printf("DETECTION HISTORY SIZE %d\n", this->detectionHistory.size());
     }
 
     if(trackerBB != NULL)
@@ -404,8 +404,8 @@ void Predator::fuseHypotheses()
         currBB = detectedBB;
     }
 
-    printf("BB %d %d %d %d conf %f post %f valid %d\n", currBB.x, currBB.y, currBB.w, currBB.h, currBB.conf, currBB.post, currBB.valid);
-    printf("DETECTED BB %d %d %d %d conf %f post %f valid %d\n", detectedBB.x,  detectedBB.y,  detectedBB.w,   detectedBB.h, currBB.post,  detectedBB.conf,  detectedBB.valid);
+    //printf("BB %d %d %d %d conf %f post %f valid %d\n", currBB.x, currBB.y, currBB.w, currBB.h, currBB.conf, currBB.post, currBB.valid);
+    //printf("DETECTED BB %d %d %d %d conf %f post %f valid %d\n", detectedBB.x,  detectedBB.y,  detectedBB.w,   detectedBB.h, currBB.post,  detectedBB.conf,  detectedBB.valid);
 
 
 }

@@ -116,6 +116,11 @@ bool BoundingBox::isInside(  BoundingBox& other )
     return (this->x >= other.x && this->y >= other.y && this->xf < other.xf && this->yf < other.yf);
 }
 
+bool BoundingBox::isInside( int x, int y)
+{
+	return (this->x <= x && this->y <= y && this->xf > x && this->yf > y);
+}
+
 float BoundingBox::overlap(  BoundingBox& other )
 {
     if( !this->isOverlapping(other) ) return 0.0f;

@@ -37,6 +37,14 @@ Mat get_roi(Mat& src, BoundingBox box, int padding)
     return roi;
 }
 
+void draw_box(BoundingBox& b, Mat& src, Scalar color)
+{
+    Point2i p1(b.x, b.y);
+    Point2i p2(b.xf, b.yf);
+    rectangle(src, p1, p2, color, 5 );
+}
+
+
 bool gtCompf( float& a,  float& b)
 {
     return a > b;

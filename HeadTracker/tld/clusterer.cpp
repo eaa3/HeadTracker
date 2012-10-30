@@ -139,12 +139,12 @@ BoundingBox Clusterer::cluster( vector<BoundingBox*>& confidentWindows)
     {
         detectionBB = calcMeanBB(confidentWindows);
         detectionBB.detected = true;
-        printf("DETECTED!!! DETECTED!!! DETECTED!!! DETECTED!!!\n");
+        //printf("DETECTED!!! DETECTED!!! DETECTED!!! DETECTED!!!\n");
     }
     else
     {
         //detectionBB = calcMeanBB(confidentWindows);
-        printf("setCount %d ElemCount %d\n", djSet.setCount, djSet.elemCount);
+        //printf("setCount %d ElemCount %d\n", djSet.setCount, djSet.elemCount);
     }
 
     return detectionBB;

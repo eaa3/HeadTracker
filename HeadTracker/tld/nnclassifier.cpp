@@ -92,8 +92,8 @@ void NNClassifier::learn(  vector<NormalizedPatch>& patches)
         }
     }
 
-    if( learntP ) printf("WE'VE LEARNT POSITIVES! Model_P_Size %d\n", this->truePositives.size());
-    if( learntN ) printf("WE'VE LEARNT NEGATIVES! Model_N_Size %d\n", this->falsePositives.size());
+    //if( learntP ) printf("WE'VE LEARNT POSITIVES! Model_P_Size %d\n", this->truePositives.size());
+   // if( learntN ) printf("WE'VE LEARNT NEGATIVES! Model_N_Size %d\n", this->falsePositives.size());
 
 
 }

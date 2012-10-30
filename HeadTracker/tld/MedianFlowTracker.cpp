@@ -67,7 +67,7 @@ void MedianFlowTracker::track(Mat prevMat, Mat currMat, Rect* prevBB) {
 			//Leave it empty
 		} else {
 			trackerBB = new Rect(x,y,w,h);
-			printf("BBinside %d %d %d %d\n", trackerBB->x, trackerBB->y, trackerBB->width, trackerBB->height);
+			//printf("BBinside %d %d %d %d\n", trackerBB->x, trackerBB->y, trackerBB->width, trackerBB->height);
 		}
 	}
 }

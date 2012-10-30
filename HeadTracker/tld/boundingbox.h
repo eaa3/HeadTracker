@@ -35,6 +35,7 @@ public:
     bool isOverlapping(  BoundingBox& other );
     bool isOverlapping(  BoundingBox& other, float minOverlapArea );
     bool isInside(  BoundingBox& other );
+	bool isInside( int x, int y);
 
     float overlap(  BoundingBox& other );
     void overlap(  vector<BoundingBox>& others, float* overlaps );

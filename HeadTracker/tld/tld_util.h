@@ -14,6 +14,7 @@ bool gtCompf( float& a,  float& b);
 bool tldSortByOverlapDesc(pair<int,float> bb1 , pair<int,float> bb2);
 
 Mat get_roi(Mat& src, BoundingBox box, int padding = 0);
+void draw_box(BoundingBox& b, Mat& src, Scalar color);
 
 
 #endif

@@ -8,8 +8,12 @@
 #include <opencv2/opencv.hpp>
 #include "Model3D.h"
 #include "tld/Predator.h"
+#include "videohandler.h"
 
-
+const int FRAMEW = 640;
+const int FRAMEH = 480;
+const string tldwindow_name = "TLD Frame View";
+const string tldroi_name = "TLD ROI View";
 
 using namespace tld;
 
@@ -17,11 +21,19 @@ using namespace tld;
 Model3D m;
 Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
+VideoHandler v(640, 480);
 
-const int FRAMEW = 640;
-const int FRAMEH = 480;
+
 bool* key = new bool[256];
-float x = 100,y,z = -200;
+
+
+Vector3 originalCamPos(0,0,-200);
+Vector3 camPos = originalCamPos;
+
+BoundingBox originalBB;
+BoundingBox selectedBB;
+//mouse vars
+bool grabbed, grab_allowed, selected, tracking_started;
 
 
 GLfloat ambientColor[] = {0.3f, 0.4f, 0.3f, 1.0f};
@@ -36,7 +48,7 @@ GLfloat lightPos1[] = {30.0f, -30.0f, 0.0f, 0.0f};
 
 //Directed specular light
 GLfloat lightColor2[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPos2[] = {x, y, z, 0.0f};
+GLfloat lightPos2[] = {camPos[0], camPos[1], camPos[2], 0.0f};
 GLfloat specularity[4]= {0.9f,0.9f,0.9f,1.0};
 GLint specMaterial = 40;
 
@@ -55,15 +67,141 @@ void keyUp(unsigned char keyCode, int x, int y)
 
 void keyOp()
 {
-
-	if( key['a'] ) x-=10;
-	if( key['d'] ) x+=10;
-	if( key['w'] ) y-=10;
-	if( key['s'] ) y+=10;
-	if( key['q'] ) z+=10;
-	if( key['e'] ) z-=10;
+	float d = 10;
+	if( key['a'] ) camPos += Vector3(-d, 0, 0);
+	if( key['d'] ) camPos += Vector3(d, 0, 0);
+	if( key['w'] ) camPos += Vector3(0, -d, 0);
+	if( key['s'] ) camPos += Vector3(0, d, 0);
+	if( key['q'] ) camPos += Vector3(0, 0, d);
+	if( key['e'] ) camPos += Vector3(0, 0, -d);
 
 	glutPostRedisplay();
+
+
+
+	
+}
+
+void acquireFrame(int value)
+{
+	if( !v.acquire() )
+	{
+		printf("could not acquire an image, video source is broken!\n");
+	}
+
+	if( tracking_started )
+	{
+		predator.processFrame(v.currentFrame);
+		selectedBB = predator.currBB;
+
+		if( predator.currBB.valid && predator.prevBB.valid )
+		{
+			Vector3 c1(-predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
+			Vector3 c2(-predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
+			
+			Vector3 motion = c2 - c1;
+
+			motion[0] = -motion[0];
+			motion[1] = -motion[1];
+			camPos += motion;
+			
+			float zoomFactor = float(predator.currBB.getArea())/originalBB.getArea() ;
+			camPos[2] = originalCamPos[2] + zoomFactor*100;
+		
+
+			printf("motion %.2f %.2f %.2f\n", motion[0], motion[1], zoomFactor);
+		}
+		else
+		{
+			camPos = originalCamPos;
+		}
+		
+
+	}
+
+	draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
+	imshow(tldwindow_name,v.currentFrame);
+	glutTimerFunc(10, acquireFrame, 0);
+
+	
+
+}
+
+void onMouseCB( int _event, int x, int y, int flags, void* param)
+{
+    Mat temp;
+    Range rowRange, colRange;
+
+	//if( grabbed && tracking_started ) return;
+
+    switch( _event )
+    {
+    case CV_EVENT_LBUTTONDBLCLK:
+
+        //First patch was selected
+		printf("LEFT DOUBLE CLICK!\n");
+        //printf("First patch was selected!\n");
+
+        //Some processing
+
+
+		if ( selectedBB.isInside(x,y) )
+		{
+			tracking_started = true;
+		}
+		else
+		{
+			grab_allowed = true;
+		}
+		
+		if( tracking_started ){
+			printf("START TRACKING!\n");
+			
+			predator.selectObject(v.currentFrame, selectedBB);
+			originalBB = selectedBB;
+		}
+		
+
+
+        break;
+    case CV_EVENT_MOUSEMOVE:
+		//printf("mouse is moving! (%d,%d) box(%d,%d)\n", x,y, selectedBB.xf, selectedBB.yf);
+
+		if( grabbed  )
+		{
+			selectedBB.setWH(x - selectedBB.x,y - selectedBB.y);
+		}
+
+        break;
+    case CV_EVENT_LBUTTONDOWN:
+
+        printf("mouse left button down!\n");
+
+		if( !grabbed && grab_allowed  )
+		{
+			selectedBB.setXY(x,y);
+			//selectedBB.setWH(0,0);
+			grabbed = true;
+
+		}
+
+
+
+        break;
+    case CV_EVENT_LBUTTONUP:
+        //printf("mouse left button up!\n");
+
+		grabbed = false;
+		grab_allowed = false;
+
+
+        break;
+    default:
+        printf("another event\n");
+        break;
+    }
+
+
 }
 
 
@@ -83,10 +221,10 @@ void display(void)
 	//Sets the camera position and orientation
 	
 
-	gluLookAt(x,y,z,0,0,0,0,1,0);
-	lightPos2[0] = x;
-	lightPos2[1] = y;
-	lightPos2[2] = z;
+	gluLookAt(camPos[0],camPos[1],camPos[2],0,0,0,0,1,0);
+	lightPos2[0] = camPos[0];
+	lightPos2[1] = camPos[1];
+	lightPos2[2] = camPos[2];
 
 	//Setting up lights
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
@@ -147,6 +285,11 @@ void init (void)
 	glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
+
+	namedWindow(tldwindow_name);
+
+	grabbed = tracking_started = selected = false;
+	grab_allowed = true;
 }
 
 void deinit()
@@ -176,6 +319,11 @@ int main(int argc, char** argv)
 	glutKeyboardFunc(keyDown);
 	glutKeyboardUpFunc(keyUp);
 	glutIdleFunc(keyOp);
+
+	acquireFrame(0);
+
+	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
+
 	glutMainLoop();
 	return 0; /* ISO C requires main to return int. */
 }
