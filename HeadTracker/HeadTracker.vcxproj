@@ -39,12 +39,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld;E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opencv\build\x86\vc10\lib;E:\Workspace\HeadTracker\HeadTracker\glut;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld;E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opencv\build\x86\vc10\lib;E:\Workspace\HeadTracker\HeadTracker\glut;$(LibraryPath)</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
@@ -82,6 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="glsurface.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model3D.cpp" />
     <ClCompile Include="tld\boundingbox.cpp" />
@@ -104,8 +105,10 @@
     <ClCompile Include="tld\tld_util.cpp" />
     <ClCompile Include="tld\twobitbp.cpp" />
     <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="videohandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="glsurface.h" />
     <ClInclude Include="Model3D.h" />
     <ClInclude Include="tld\boundingbox.h" />
     <ClInclude Include="tld\clusterer.h" />
@@ -128,6 +131,7 @@
     <ClInclude Include="tld\tld_util.h" />
     <ClInclude Include="tld\twobitbp.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="videohandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="tld\tldConfig.txt" />

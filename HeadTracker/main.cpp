@@ -9,11 +9,14 @@
 #include "Model3D.h"
 #include "tld/Predator.h"
 #include "videohandler.h"
+#include "glsurface.h"
 
 const int FRAMEW = 640;
 const int FRAMEH = 480;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
+
+const float RADIUS = 200.0f;
 
 using namespace tld;
 
@@ -22,6 +25,8 @@ Model3D m;
 Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
 VideoHandler v(640, 480);
+glSurface surface(640, 480, 100, Vector3(0, -40, 0));
+
 
 
 bool* key = new bool[256];
@@ -40,11 +45,11 @@ GLfloat ambientColor[] = {0.3f, 0.4f, 0.3f, 1.0f};
 
 //Positioned light
 GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightPos0[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightPos0[] = {-100.0f, 50.0f, -50.0f, 1.0f};
 
 //Directed diffuse light
 GLfloat lightColor1[] = {5.0f, 2.0f, 2.0f, 1.0f};
-GLfloat lightPos1[] = {30.0f, -30.0f, 0.0f, 0.0f};
+GLfloat lightPos1[] = {30.0f, -30.0f, -50.0f, 0.0f};
 
 //Directed specular light
 GLfloat lightColor2[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -76,40 +81,39 @@ void keyOp()
 	if( key['e'] ) camPos += Vector3(0, 0, -d);
 
 	glutPostRedisplay();
-
-
-
 	
 }
 
-void acquireFrame(int value)
+void acquireFrameAndProcess(int value)
 {
 	if( !v.acquire() )
 	{
 		printf("could not acquire an image, video source is broken!\n");
 	}
 
+	
+
 	if( tracking_started )
 	{
 		predator.processFrame(v.currentFrame);
 		selectedBB = predator.currBB;
 
-		if( predator.currBB.valid && predator.prevBB.valid )
+		if( predator.currBB.valid )
 		{
 			Vector3 c1(-predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
 			Vector3 c2(-predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
 			
 			Vector3 motion = c2 - c1;
 
-			motion[0] = -motion[0];
-			motion[1] = -motion[1];
+			motion[0] = -motion[0]/2;
+			motion[1] = -motion[1]/2;
 			camPos += motion;
 			
-			float zoomFactor = float(predator.currBB.getArea())/originalBB.getArea() ;
-			camPos[2] = originalCamPos[2] + zoomFactor*100;
-		
-
-			printf("motion %.2f %.2f %.2f\n", motion[0], motion[1], zoomFactor);
+			float zoomFactor = sqrtf(originalBB.getArea())/sqrtf(predator.currBB.getArea()) ;
+			
+			camPos *= RADIUS*zoomFactor/camPos.norm();
+			
+			//printf("motion %.2f %.2f %.2f\n", motion[0], motion[1], zoomFactor);
 		}
 		else
 		{
@@ -119,9 +123,8 @@ void acquireFrame(int value)
 
 	}
 
-	draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
+	if( !tracking_started || (predator.currBB.valid && tracking_started)  ) draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
 	imshow(tldwindow_name,v.currentFrame);
-	glutTimerFunc(10, acquireFrame, 0);
 
 	
 
@@ -129,9 +132,7 @@ void acquireFrame(int value)
 
 void onMouseCB( int _event, int x, int y, int flags, void* param)
 {
-    Mat temp;
-    Range rowRange, colRange;
-
+	printf("\rgrabbed(%d) grab_allowed(%d) tracking_started(%d)\n", grabbed, grab_allowed, tracking_started);
 	//if( grabbed && tracking_started ) return;
 
     switch( _event )
@@ -139,7 +140,7 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
     case CV_EVENT_LBUTTONDBLCLK:
 
         //First patch was selected
-		printf("LEFT DOUBLE CLICK!\n");
+		//printf("LEFT DOUBLE CLICK!\n");
         //printf("First patch was selected!\n");
 
         //Some processing
@@ -152,11 +153,16 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 		else
 		{
 			grab_allowed = true;
+			grabbed = false;
+			tracking_started = false;
+			selectedBB.setWH(0,0);
+			selectedBB.valid = 0;
 		}
 		
 		if( tracking_started ){
 			printf("START TRACKING!\n");
 			
+			predator.reset();
 			predator.selectObject(v.currentFrame, selectedBB);
 			originalBB = selectedBB;
 		}
@@ -165,9 +171,9 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 
         break;
     case CV_EVENT_MOUSEMOVE:
-		//printf("mouse is moving! (%d,%d) box(%d,%d)\n", x,y, selectedBB.xf, selectedBB.yf);
+		
 
-		if( grabbed  )
+		if( grab_allowed && grabbed  )
 		{
 			selectedBB.setWH(x - selectedBB.x,y - selectedBB.y);
 		}
@@ -175,12 +181,12 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
         break;
     case CV_EVENT_LBUTTONDOWN:
 
-        printf("mouse left button down!\n");
+        //printf("mouse left button down!\n");
 
-		if( !grabbed && grab_allowed  )
+		if( grab_allowed && !grabbed )
 		{
 			selectedBB.setXY(x,y);
-			//selectedBB.setWH(0,0);
+			selectedBB.setWH(0,0);
 			grabbed = true;
 
 		}
@@ -189,10 +195,12 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 
         break;
     case CV_EVENT_LBUTTONUP:
-        //printf("mouse left button up!\n");
+        printf("mouse left button up!\n");
 
-		grabbed = false;
-		grab_allowed = false;
+		if( grabbed ) {
+			grabbed = false;
+			grab_allowed = false;
+		}
 
 
         break;
@@ -208,9 +216,10 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 void display(void)
 {
 	
+	acquireFrameAndProcess(0);
 
 	/* clear all pixels */
-	glClear (GL_COLOR_BUFFER_BIT);
+	glClear (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	/* draw white polygon (rectangle) with corners at
 	* (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)
 	*/
@@ -244,14 +253,15 @@ void display(void)
 	
 	//Sets the object position and orientation
 	m.draw();
+	surface.draw();
 
 	
 	/* don't wait!
 	* start processing buffered OpenGL routines
 	*/
 
-	for(int i = 0; i < 256; i++ ) key[i] = false;
-	glFlush();
+	
+
 	glutSwapBuffers();
 	
 }
@@ -264,14 +274,17 @@ void init (void)
 	/* initialize viewing values */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, double(FRAMEW)/FRAMEH, 10, 500);
+	gluPerspective(45.0, double(FRAMEW)/FRAMEH, 1, 800);
+	
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	m.load("models/eagle.obj");
 
-	//glEnable(GL_DEPTH_TEST);
+	
+
+	glEnable(GL_DEPTH_TEST);
 
 
 	glEnable(GL_COLOR_MATERIAL);
@@ -320,7 +333,7 @@ int main(int argc, char** argv)
 	glutKeyboardUpFunc(keyUp);
 	glutIdleFunc(keyOp);
 
-	acquireFrame(0);
+	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
 

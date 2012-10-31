@@ -81,6 +81,12 @@
     <ClCompile Include="tld\params.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="videohandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glsurface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model3D.h">
@@ -147,6 +153,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tld\params.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="videohandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glsurface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
