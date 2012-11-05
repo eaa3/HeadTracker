@@ -2,12 +2,13 @@
 
 
 
-glSurface::glSurface(int w, int h, int nLines, Vector3 pos, Vector3 normal, Vector3 rgbColor)
+glSurface::glSurface(int w, int h, int nLines, Vector3 pos, Vector3 vrot, Vector3 rgbColor, Vector3 normal)
 {
 	this->w = w;
 	this->h = h;
 
 	this->pos = pos;
+	this->vrot = vrot;
 	this->normal = normal;
 	this->rgbColor = rgbColor;
 
@@ -22,9 +23,9 @@ void glSurface::draw()
 	//glLoadIdentity();
 	glTranslatef(this->pos[0], this->pos[1], this->pos[2]);
 
-	glRotatef(normal[0], 1, 0, 0);
-	glRotatef(normal[1], 0, 1, 0);
-	glRotatef(normal[2], 0, 0, 1);
+	glRotatef(vrot[0], 1, 0, 0);
+	glRotatef(vrot[1], 0, 1, 0);
+	glRotatef(vrot[2], 0, 0, 1);
 
 	
 
@@ -34,6 +35,8 @@ void glSurface::draw()
 
 	glBegin(GL_LINES);
 	
+	glNormal3fv(normal);
+
 	float dx = (this->nLines > 0? float(w)/this->nLines : w );
 	float dz = (this->nLines > 0? float(h)/this->nLines : h );
 

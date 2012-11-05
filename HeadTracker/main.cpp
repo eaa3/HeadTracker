@@ -16,7 +16,7 @@ const int FRAMEH = 480;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-const float RADIUS = 200.0f;
+float RADIUS = 400.0f;
 
 using namespace tld;
 
@@ -25,14 +25,18 @@ Model3D m;
 Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
 VideoHandler v(640, 480);
-glSurface surface(640, 480, 100, Vector3(0, -40, 0));
+Vector3 color = Vector3(0.3f,0.5f,0.3f);
+glSurface surface1(200, 200, 50, Vector3(0, -40, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface2(200, 200, 50, Vector3(-100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface3(200, 200, 50, Vector3(100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface4(200, 200, 50, Vector3(0, 0, 100), Vector3(90,0,0), color, Vector3(0,0,-1));
 
 
 
 bool* key = new bool[256];
 
 
-Vector3 originalCamPos(0,0,-200);
+Vector3 originalCamPos(0,0, -RADIUS);
 Vector3 camPos = originalCamPos;
 
 BoundingBox originalBB;
@@ -79,6 +83,9 @@ void keyOp()
 	if( key['s'] ) camPos += Vector3(0, d, 0);
 	if( key['q'] ) camPos += Vector3(0, 0, d);
 	if( key['e'] ) camPos += Vector3(0, 0, -d);
+
+	if( key['i'] ) RADIUS-=d;
+	if( key['o'] ) RADIUS+=d;
 
 	glutPostRedisplay();
 	
@@ -253,13 +260,16 @@ void display(void)
 	
 	//Sets the object position and orientation
 	m.draw();
-	surface.draw();
+	surface1.draw();
+	surface2.draw();
+	surface3.draw();
+	surface4.draw();
 
 	
 	/* don't wait!
 	* start processing buffered OpenGL routines
 	*/
-
+	for(int i = 0; i < 256; i++) key[i] = false;
 	
 
 	glutSwapBuffers();
@@ -282,7 +292,7 @@ void init (void)
 
 	m.load("models/eagle.obj");
 
-	
+	m.translation[2] = 50;
 
 	glEnable(GL_DEPTH_TEST);
 

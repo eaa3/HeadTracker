@@ -6,6 +6,7 @@
 #define PI 3.14159265359f
 
 float toRad(float angle);
+float toDegree(float rad);
 
 class Vector3
 {

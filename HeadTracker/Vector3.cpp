@@ -5,6 +5,12 @@ float toRad(float angle){
     return (angle*PI)/180;
 }
 
+float toDegree(float rad)
+{
+	return (rad*180.0f)/PI;
+}
+
+
 const int Vector3::R_X = 0;
 const int Vector3::R_Y = 1;
 const int Vector3::R_Z = 2;
