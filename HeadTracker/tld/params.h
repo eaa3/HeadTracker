@@ -46,7 +46,7 @@ class Params
         int min_bb;
         int min_window_scale;
         int max_window_scale;
-        int base_window_scale;
+        float base_window_scale;
         float shift;
 
          /*1-NN Classifier Constants*/

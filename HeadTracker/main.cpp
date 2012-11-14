@@ -24,16 +24,16 @@ using namespace tld;
 Model3D m;
 Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
-VideoHandler v(640, 480);
+VideoHandler v(p.frame_w, p.frame_h);
 Vector3 color = Vector3(0.3f,0.5f,0.3f);
-glSurface surface1(200, 200, 50, Vector3(0, -40, 0), Vector3(0,0,0), color, Vector3(0,1,0));
-glSurface surface2(200, 200, 50, Vector3(-100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface3(200, 200, 50, Vector3(100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface4(200, 200, 50, Vector3(0, 0, 100), Vector3(90,0,0), color, Vector3(0,0,-1));
+glSurface surface1(200, 200, 30, Vector3(0, -40, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface2(200, 200, 30, Vector3(-100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface3(200, 200, 30, Vector3(100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface4(200, 200, 30, Vector3(0, 0, 100), Vector3(90,0,0), color, Vector3(0,0,-1));
 
 
 
-bool* key = new bool[256];
+int* key = new int[256];
 
 
 Vector3 originalCamPos(0,0, -RADIUS);
@@ -64,28 +64,28 @@ GLint specMaterial = 40;
 
 void keyDown(unsigned char keyCode, int x, int y)
 {
-	key[keyCode] = true;
+	key[keyCode]++;
 	printf("down!\n");
 }
 
 void keyUp(unsigned char keyCode, int x, int y)
 {
-	key[keyCode] = false;
+	key[keyCode] = 0;
 	printf("up!\n");
 }
 
 void keyOp()
 {
 	float d = 10;
-	if( key['a'] ) camPos += Vector3(-d, 0, 0);
-	if( key['d'] ) camPos += Vector3(d, 0, 0);
-	if( key['w'] ) camPos += Vector3(0, -d, 0);
-	if( key['s'] ) camPos += Vector3(0, d, 0);
-	if( key['q'] ) camPos += Vector3(0, 0, d);
-	if( key['e'] ) camPos += Vector3(0, 0, -d);
+	if( key['a'] == 1 ) camPos += Vector3(-d, 0, 0);
+	if( key['d'] == 1) camPos += Vector3(d, 0, 0);
+	if( key['w'] == 1) camPos += Vector3(0, -d, 0);
+	if( key['s'] == 1) camPos += Vector3(0, d, 0);
+	if( key['q'] == 1) camPos += Vector3(0, 0, d);
+	if( key['e'] == 1) camPos += Vector3(0, 0, -d);
 
-	if( key['i'] ) RADIUS-=d;
-	if( key['o'] ) RADIUS+=d;
+	if( key['i'] == 1) RADIUS-=d;
+	if( key['o'] == 1) RADIUS+=d;
 
 	glutPostRedisplay();
 	
@@ -93,6 +93,9 @@ void keyOp()
 
 void acquireFrameAndProcess(int value)
 {
+
+	//printf("BASE %.2f OTHER %.2f\n", predator.detector->baseScale, p.base_window_scale);
+
 	if( !v.acquire() )
 	{
 		printf("could not acquire an image, video source is broken!\n");
@@ -134,6 +137,7 @@ void acquireFrameAndProcess(int value)
 	imshow(tldwindow_name,v.currentFrame);
 
 	
+	//glutSwapBuffers();
 
 }
 
@@ -222,16 +226,14 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 
 void display(void)
 {
-	
 	acquireFrameAndProcess(0);
-
 	/* clear all pixels */
 	glClear (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	/* draw white polygon (rectangle) with corners at
 	* (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)
 	*/
 	
-	glMatrixMode(GL_MODELVIEW);
+	//glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	//Sets the camera position and orientation
@@ -269,7 +271,7 @@ void display(void)
 	/* don't wait!
 	* start processing buffered OpenGL routines
 	*/
-	for(int i = 0; i < 256; i++) key[i] = false;
+	//for(int i = 0; i < 256; i++) key[i] = false;
 	
 
 	glutSwapBuffers();
@@ -343,6 +345,7 @@ int main(int argc, char** argv)
 	glutKeyboardUpFunc(keyUp);
 	glutIdleFunc(keyOp);
 
+	
 	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);

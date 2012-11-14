@@ -27,6 +27,8 @@ public:
 	VideoHandler(int w, int h, string source, bool frameBound = false, int maxFPS = 30);
 	VideoHandler(int w, int h, int source = 0, bool frameBound = false, int maxFPS = 30);
 
+	~VideoHandler();
+
 
 	bool acquire(Mat& img);
 	bool acquire();

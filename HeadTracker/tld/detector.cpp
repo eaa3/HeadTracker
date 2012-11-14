@@ -58,6 +58,8 @@ void Detector::initWindows()
     BoundingBox windowFrame(1,1, frameW - 1, frameH - 1);
     BoundingBox currentBB;
 
+
+
     //Initializing windows and scales
     for(int i = minScale; i <= maxScale; i++ )
     {

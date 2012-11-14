@@ -36,7 +36,7 @@ Params::Params(string paramsFile)
         fscanf(in, "#MIN_BB=%d\n", &this->min_bb);
         fscanf(in, "#MIN_WINDOW_SCALE=%d\n", &this->min_window_scale);
         fscanf(in, "#MAX_WINDOW_SCALE=%d\n", &this->max_window_scale);
-        fscanf(in, "#BASE_WINDOW_SCALE=%d\n", &this->base_window_scale);
+        fscanf(in, "#BASE_WINDOW_SCALE=%f\n", &this->base_window_scale);
         fscanf(in, "#SHIFT=%f\n", &this->shift);
 
         fgets(comment,500, in);

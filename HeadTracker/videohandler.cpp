@@ -16,6 +16,11 @@ VideoHandler::VideoHandler(int w, int h, int source, bool frameBound, int maxFPS
 	this->config(w,h, frameBound, maxFPS);
 }
 
+VideoHandler::~VideoHandler()
+{
+	this->vcap.release();
+}
+
 
 void VideoHandler::config(int w, int h, bool frameBound, int maxFPS)
 {
@@ -39,7 +44,7 @@ bool VideoHandler::acquire()
 
 	//resize(this->currentFrame, this->currentFrame, Size(this->h, this->w));
 
-	this->frameControl();
+	//this->frameControl();
 
 	return true;
 }
