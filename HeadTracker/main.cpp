@@ -17,13 +17,13 @@ const int FRAMEH = 480;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-float RADIUS = 30.0f;
+float RADIUS = 70.0f;
 
 GLfloat realWindowW = 47.6f;
 GLfloat realWindowH = 26.77f;
 
-GLfloat fx1 = -100, fx2 = 100, fy1 = -100, fy2 = 100;
-GLfloat dn = 40, f = 400;
+GLfloat fx1 = -realWindowW/2, fx2 = realWindowW/2, fy1 = -realWindowH/2, fy2 = realWindowH/2;
+GLfloat dn = 70, f = 5*realWindowW;
 
 using namespace tld;
 
@@ -33,11 +33,11 @@ Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
 VideoHandler v(p.frame_w, p.frame_h);
 Vector3 color = Vector3(0.3f,0.5f,0.3f);
-glSurface surface1(200, 200, 30, Vector3(0, -100, 0), Vector3(0,0,0), color, Vector3(0,1,0));
-glSurface surface2(200, 200, 30, Vector3(-100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface3(200, 200, 30, Vector3(100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface4(200, 200, 30, Vector3(0, 0, 100), Vector3(90,0,0), color, Vector3(0,0,-1));
-Cube cube(50);
+glSurface surface1(realWindowW, f, 30, Vector3(0, fy1, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface2(realWindowH, f, 30, Vector3(fx1, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface3(realWindowH, f, 30, Vector3(fx2, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface4(realWindowW, realWindowH, 30, Vector3(0, 0, f/2), Vector3(90,0,0), color, Vector3(0,0,-1));
+Cube cube(10);
 
 
 
@@ -68,6 +68,14 @@ GLfloat lightColor2[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLfloat lightPos2[] = {camPos[0], camPos[1], camPos[2], 0.0f};
 GLfloat specularity[4]= {0.9f,0.9f,0.9f,1.0};
 GLint specMaterial = 40;
+
+float toCm(float a, float xi, float yi, float xf, float yf)
+{
+	float yp = yf + ((a - xf)/(xf-xi))*(yf - yi);
+
+	return yp;
+}
+
 
 
 void keyDown(unsigned char keyCode, int x, int y)
@@ -143,6 +151,10 @@ void acquireFrameAndProcess(int value)
 			camPos *= RADIUS*zoomFactor/camPos.norm();
 			
 			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -RADIUS*zoomFactor );
+
+			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW/2, FRAMEW/2, realWindowW/2);
+			head[1] = toCm(head[1] - 20, -FRAMEH/2, -realWindowH/2, FRAMEH/2, realWindowH/2);
+
 			camPos = head;
 
 			
@@ -250,6 +262,8 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 
 void display(void)
 {
+	//printf("OLHA %f\n", predator.detector->baseScale);
+
 	acquireFrameAndProcess(0);
 	/* clear all pixels */
 	glClear (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -287,11 +301,11 @@ void display(void)
 	dn = fabs(camPos[2]);
 	df = 300 - fabs(camPos[2]);
 
-	printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);
+	//printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);
 	
 	//dn = (1/dn)*1000;
 
-	glFrustum(x1,x2,y1,y2,dn,500);
+	glFrustum(x1,x2,y1,y2,dn,f);
 
 
 
@@ -321,8 +335,8 @@ void display(void)
 	
 	//Sets the object position and orientation
 
-	//cube.draw();
-	m.draw();
+	cube.draw();
+	//m.draw();
 	surface1.draw();
 	surface2.draw();
 	surface3.draw();
@@ -341,6 +355,7 @@ void display(void)
 void init (void)
 {
 	
+	cube.pos[2] = f/2 - 2*cube.edge;
 
 	/* select clearing (background) color */
 	glClearColor (0.0, 0.0, 0.0, 0.0);
@@ -414,7 +429,7 @@ int main(int argc, char** argv)
 	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
-	glutFullScreen();
+	//glutFullScreen();
 	glutMainLoop();
 	return 0; /* ISO C requires main to return int. */
 }

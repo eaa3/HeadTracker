@@ -2,7 +2,7 @@
 
 
 
-glSurface::glSurface(int w, int h, int nLines, Vector3 pos, Vector3 vrot, Vector3 rgbColor, Vector3 normal)
+glSurface::glSurface(float w, float h, int nLines, Vector3 pos, Vector3 vrot, Vector3 rgbColor, Vector3 normal)
 {
 	this->w = w;
 	this->h = h;
@@ -42,12 +42,12 @@ void glSurface::draw()
 
 	float zLimit = floor(float(h)/2);
 	float xLimit = floor(float(w)/2);
-	for(int i = -zLimit; i <= zLimit; i += dz)
+	for(float i = -zLimit; i <= zLimit; i += dz)
 	{
 		glVertex3f(-xLimit, 0, i);
 		glVertex3f(xLimit, 0, i);
 
-		for( int j = -xLimit; j <= xLimit; j += dx)
+		for( float j = -xLimit; j <= xLimit; j += dx)
 		{
 			glVertex3f(i, 0, -zLimit);
 			glVertex3f(i, 0, zLimit);
