@@ -54,3 +54,115 @@ bool gtCompf( float& a,  float& b)
 bool tldSortByOverlapDesc(pair<int,float> bb1 , pair<int,float> bb2) {
 	return bb1.second > bb2.second;
 }
+
+Color3f::Color3f()
+{
+    this->color[0] = 0.0f;
+    this->color[1] = 0.0f;
+    this->color[2] = 0.0f;
+}
+
+Color3f::Color3f(GLfloat r, GLfloat g, GLfloat b)
+{
+    this->color[0] = r;
+    this->color[1] = g;
+    this->color[2] = b;
+}
+
+Color3f::operator GLfloat*()
+{
+    return this->color;
+}
+
+
+Cube::Cube(GLfloat edge)
+{
+    this->edge = edge;
+    pos[0] = pos[1] = pos[2] = 0.0f;
+    angle[0] = angle[1] = angle[2] = 0.0f;
+
+    //Front-face
+    this->color[0] = Color3f(1.0f,0.0f,0.0f);
+    //Back-face
+    this->color[1] = Color3f(1.0f,0.0f,0.0f);
+    //Right-face
+    this->color[2] = Color3f(0.0f,1.0f,0.0f);
+    //Left-face
+    this->color[3] = Color3f(0.0f,1.0f,0.0f);
+    //Up-face
+    this->color[4] = Color3f(0.5f,0.5f,0.5f);
+    //Down-face
+    this->color[5] = Color3f(0.0f,0.0f,1.0f);
+}
+
+GLfloat& Cube::operator[](int i)
+{
+    return this->pos[i];
+}
+
+void Cube::draw()
+{
+    glPushMatrix();
+    //glLoadIdentity();
+
+    glTranslatef(this->pos[0],this->pos[1], this->pos[2]);
+
+    glRotatef(this->angle[0], 1.0f, 0.0f, 0.0f);
+    glRotatef(this->angle[1], 0.0f, 1.0f, 0.0f);
+    glRotatef(this->angle[2], 0.0f, 0.0f, 1.0f);
+
+
+
+
+    glBegin(GL_QUADS);
+    //Front-face
+    glColor3fv(this->color[0]);
+
+    glVertex3f(-edge/2, edge/2, 0);
+    glVertex3f(edge/2, edge/2, 0);
+    glVertex3f(edge/2, -edge/2, 0);
+    glVertex3f(-edge/2, -edge/2, 0);
+
+    //Back-face
+    glColor3fv(this->color[1]);
+    glVertex3f(-edge/2, edge/2, -edge);
+    glVertex3f(edge/2, edge/2, -edge);
+    glVertex3f(edge/2, -edge/2, -edge);
+    glVertex3f(-edge/2, -edge/2, -edge);
+
+    //Right-face
+    glColor3fv(this->color[2]);
+    glVertex3f(edge/2, edge/2, 0);
+    glVertex3f(edge/2, edge/2, -edge);
+    glVertex3f(edge/2, -edge/2, -edge);
+    glVertex3f(edge/2, -edge/2, 0);
+
+    //Right-face
+    glColor3fv(this->color[3]);
+    glVertex3f(-edge/2, edge/2, 0);
+    glVertex3f(-edge/2, edge/2, -edge);
+    glVertex3f(-edge/2, -edge/2, -edge);
+    glVertex3f(-edge/2, -edge/2, 0);
+
+    //Up-face
+    glColor3fv(this->color[4]);
+    glVertex3f(-edge/2, edge/2, 0);
+    glVertex3f(-edge/2, edge/2, -edge);
+    glVertex3f(edge/2, edge/2, -edge);
+    glVertex3f(edge/2, edge/2, 0);
+
+    //Down-face
+    glColor3fv(this->color[5]);
+    glVertex3f(-edge/2, -edge/2, 0);
+    glVertex3f(-edge/2, -edge/2, -edge);
+    glVertex3f(edge/2, -edge/2, -edge);
+    glVertex3f(edge/2, -edge/2, 0);
+
+    glEnd();
+
+    glPopMatrix();
+
+
+
+
+}

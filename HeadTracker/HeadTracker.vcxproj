@@ -44,7 +44,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\Workspace\HeadTracker\HeadTracker\tld;E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);E:\Workspace\HeadTracker\HeadTracker\tld;E:\Workspace\HeadTracker\HeadTracker\tld\mftracker;C:\opencv\build\include;E:\Workspace\HeadTracker\HeadTracker\glut;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opencv\build\x86\vc10\lib;E:\Workspace\HeadTracker\HeadTracker\glut;$(LibraryPath)</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>

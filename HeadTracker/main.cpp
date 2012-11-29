@@ -10,13 +10,20 @@
 #include "tld/Predator.h"
 #include "videohandler.h"
 #include "glsurface.h"
+#include "tld/tld_util.h"
 
 const int FRAMEW = 640;
 const int FRAMEH = 480;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-float RADIUS = 400.0f;
+float RADIUS = 30.0f;
+
+GLfloat realWindowW = 47.6f;
+GLfloat realWindowH = 26.77f;
+
+GLfloat fx1 = -100, fx2 = 100, fy1 = -100, fy2 = 100;
+GLfloat dn = 40, f = 400;
 
 using namespace tld;
 
@@ -26,10 +33,11 @@ Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
 VideoHandler v(p.frame_w, p.frame_h);
 Vector3 color = Vector3(0.3f,0.5f,0.3f);
-glSurface surface1(200, 200, 30, Vector3(0, -40, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface1(200, 200, 30, Vector3(0, -100, 0), Vector3(0,0,0), color, Vector3(0,1,0));
 glSurface surface2(200, 200, 30, Vector3(-100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
 glSurface surface3(200, 200, 30, Vector3(100, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
 glSurface surface4(200, 200, 30, Vector3(0, 0, 100), Vector3(90,0,0), color, Vector3(0,0,-1));
+Cube cube(50);
 
 
 
@@ -87,6 +95,17 @@ void keyOp()
 	if( key['i'] == 1) RADIUS-=d;
 	if( key['o'] == 1) RADIUS+=d;
 
+	int r = 5;
+
+	if( key['4'] == 1 ) cube.angle[1]+=r;
+	if( key['6'] == 1 ) cube.angle[1]-=r;
+	if( key['8'] == 1 ) cube.angle[0]+=r;
+	if( key['2'] == 1 ) cube.angle[0]-=r;
+
+	if( key['+'] == 1 ) cube.pos[2] +=r;
+	if( key['-'] == 1 ) cube.pos[2] -=r;
+
+
 	glutPostRedisplay();
 	
 }
@@ -110,8 +129,8 @@ void acquireFrameAndProcess(int value)
 
 		if( predator.currBB.valid )
 		{
-			Vector3 c1(-predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
-			Vector3 c2(-predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
+			Vector3 c1(predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
+			Vector3 c2(predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
 			
 			Vector3 motion = c2 - c1;
 
@@ -122,6 +141,10 @@ void acquireFrameAndProcess(int value)
 			float zoomFactor = sqrtf(originalBB.getArea())/sqrtf(predator.currBB.getArea()) ;
 			
 			camPos *= RADIUS*zoomFactor/camPos.norm();
+			
+			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -RADIUS*zoomFactor );
+			camPos = head;
+
 			
 			//printf("motion %.2f %.2f %.2f\n", motion[0], motion[1], zoomFactor);
 		}
@@ -135,7 +158,8 @@ void acquireFrameAndProcess(int value)
 
 	if( !tracking_started || (predator.currBB.valid && tracking_started)  ) draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
 	imshow(tldwindow_name,v.currentFrame);
-
+	
+	//printf("\rCamPos(%.2f,%.2f,%.2f)\r", camPos[0],camPos[1],camPos[2]);
 	
 	//glutSwapBuffers();
 
@@ -232,14 +256,49 @@ void display(void)
 	/* draw white polygon (rectangle) with corners at
 	* (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)
 	*/
-	
-	//glMatrixMode(GL_MODELVIEW);
+
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	//Sets the camera position and orientation
 	
+	camPos[0] /= 2;
+	camPos[1] /= 2;
+	//gluLookAt(camPos[0],camPos[1],camPos[2],0,0,0,0,1,0);
+	gluLookAt(camPos[0],camPos[1],camPos[2], camPos[0],camPos[1],0,0,1,0);
 
-	gluLookAt(camPos[0],camPos[1],camPos[2],0,0,0,0,1,0);
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	double df = f - camPos[2];
+	//double n = -camPos[2] + 1;
+
+	//double x1 = (fx1 - camPos[0]/2)/n;
+	//double x2 = (fx2 - camPos[0]/2)/n;
+	//double y1 = (fy1 - camPos[1]/2)/n;
+	//double y2 = (fy2 - camPos[1]/2)/n;
+
+	double x1 = (fx1 + camPos[0]);///(fabs(camPos[2])/15);
+	double x2 = (fx2 + camPos[0]);///(fabs(camPos[2])/15);
+	double y1 = (fy1 - camPos[1]);////(fabs(camPos[2])/15);
+	double y2 = (fy2 - camPos[1]);///(fabs(camPos[2])/15);
+	
+	dn = fabs(camPos[2]);
+	df = 300 - fabs(camPos[2]);
+
+	printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);
+	
+	//dn = (1/dn)*1000;
+
+	glFrustum(x1,x2,y1,y2,dn,500);
+
+
+
+
+
+	glMatrixMode(GL_MODELVIEW);
+
 	lightPos2[0] = camPos[0];
 	lightPos2[1] = camPos[1];
 	lightPos2[2] = camPos[2];
@@ -261,6 +320,8 @@ void display(void)
     glLightfv(GL_LIGHT2, GL_SPECULAR, lightPos2);
 	
 	//Sets the object position and orientation
+
+	//cube.draw();
 	m.draw();
 	surface1.draw();
 	surface2.draw();
@@ -286,7 +347,11 @@ void init (void)
 	/* initialize viewing values */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, double(FRAMEW)/FRAMEH, 1, 800);
+
+	
+	
+	glFrustum(fx1,fx2,fy1,fy2,dn,f);
+	//gluPerspective(45.0, double(FRAMEW)/FRAMEH, 1, 800);
 	
 
 	glMatrixMode(GL_MODELVIEW);
@@ -349,7 +414,7 @@ int main(int argc, char** argv)
 	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
-
+	glutFullScreen();
 	glutMainLoop();
 	return 0; /* ISO C requires main to return int. */
 }

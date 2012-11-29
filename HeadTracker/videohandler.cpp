@@ -42,8 +42,9 @@ bool VideoHandler::acquire()
 
 	if( this->currentFrame.empty() ) return false;
 
-	//resize(this->currentFrame, this->currentFrame, Size(this->h, this->w));
-
+	//Mat temp;
+	//resize(this->currentFrame, temp, Size(this->h, this->h));
+	//this->currentFrame = temp;
 	//this->frameControl();
 
 	return true;
