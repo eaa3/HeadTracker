@@ -33,9 +33,11 @@ Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
 VideoHandler v(p.frame_w, p.frame_h);
 Vector3 color = Vector3(0.3f,0.5f,0.3f);
-glSurface surface1(realWindowW, f, 30, Vector3(0, fy1, 0), Vector3(0,0,0), color, Vector3(0,1,0));
-glSurface surface2(realWindowH, f, 30, Vector3(fx1, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface3(realWindowH, f, 30, Vector3(fx2, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+
+glSurface surface0(realWindowW, f, 25, Vector3(0, fy2, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface1(realWindowW, f, 25, Vector3(0, fy1, 0), Vector3(0,0,0), color, Vector3(0,1,0));
+glSurface surface2(realWindowH, f, 25, Vector3(fx1, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
+glSurface surface3(realWindowH, f, 25, Vector3(fx2, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
 glSurface surface4(realWindowW, realWindowH, 30, Vector3(0, 0, f/2), Vector3(90,0,0), color, Vector3(0,0,-1));
 Cube cube(10);
 
@@ -105,13 +107,32 @@ void keyOp()
 
 	int r = 5;
 
-	if( key['4'] == 1 ) cube.angle[1]+=r;
-	if( key['6'] == 1 ) cube.angle[1]-=r;
-	if( key['8'] == 1 ) cube.angle[0]+=r;
-	if( key['2'] == 1 ) cube.angle[0]-=r;
+	if( key['4'] == 1 ){
+		cube.angle[1]+=r;
+		m.angle[1] += r;
+	}
+	if( key['6'] == 1 ){
+		cube.angle[1]-=r;
+		m.angle[1] -= r;
+	}
+	if( key['8'] == 1 ){
+		cube.angle[0]+=r;
+		m.angle[0]+=r;
+	}
+	if( key['2'] == 1 ){
+		cube.angle[0]-=r;
+		m.angle[0]-=r;
+	}
 
-	if( key['+'] == 1 ) cube.pos[2] +=r;
-	if( key['-'] == 1 ) cube.pos[2] -=r;
+	if( key['+'] == 1 ){
+		cube.pos[2] +=r;
+		m.translation[2] +=r;
+	}
+	if( key['-'] == 1 ){
+		cube.pos[2] -=r;
+		m.translation[2] -=r;
+
+	}
 
 
 	glutPostRedisplay();
@@ -152,8 +173,8 @@ void acquireFrameAndProcess(int value)
 			
 			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -RADIUS*zoomFactor );
 
-			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW/2, FRAMEW/2, realWindowW/2);
-			head[1] = toCm(head[1] - 20, -FRAMEH/2, -realWindowH/2, FRAMEH/2, realWindowH/2);
+			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW, FRAMEW/2, realWindowW);
+			head[1] = toCm(head[1] - 20, -FRAMEH/2, -realWindowH, FRAMEH/2, realWindowH);
 
 			camPos = head;
 
@@ -335,8 +356,10 @@ void display(void)
 	
 	//Sets the object position and orientation
 
-	cube.draw();
-	//m.draw();
+	//cube.draw();
+	m.draw();
+
+	surface0.draw();
 	surface1.draw();
 	surface2.draw();
 	surface3.draw();
@@ -375,6 +398,7 @@ void init (void)
 	m.load("models/eagle.obj");
 
 	m.translation[2] = 50;
+	m.scaleFactor = 0.15f;
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -429,7 +453,7 @@ int main(int argc, char** argv)
 	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
-	//glutFullScreen();
+	glutFullScreen();
 	glutMainLoop();
 	return 0; /* ISO C requires main to return int. */
 }
