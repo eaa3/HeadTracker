@@ -13,17 +13,17 @@
 #include "tld/tld_util.h"
 
 const int FRAMEW = 640;
-const int FRAMEH = 480;
+const int FRAMEH = 360;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-float RADIUS = 70.0f;
+float RADIUS = 60.0f;
 
-GLfloat realWindowW = 47.6f;
+GLfloat realWindowW = 47.61f;
 GLfloat realWindowH = 26.77f;
 
 GLfloat fx1 = -realWindowW/2, fx2 = realWindowW/2, fy1 = -realWindowH/2, fy2 = realWindowH/2;
-GLfloat dn = 70, f = 5*realWindowW;
+GLfloat dn = RADIUS, f = 5*realWindowW;
 
 using namespace tld;
 
@@ -135,14 +135,12 @@ void keyOp()
 	}
 
 
-	glutPostRedisplay();
+	//glutPostRedisplay();
 	
 }
 
 void acquireFrameAndProcess(int value)
 {
-
-	//printf("BASE %.2f OTHER %.2f\n", predator.detector->baseScale, p.base_window_scale);
 
 	if( !v.acquire() )
 	{
@@ -160,26 +158,16 @@ void acquireFrameAndProcess(int value)
 		{
 			Vector3 c1(predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
 			Vector3 c2(predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
-			
-			Vector3 motion = c2 - c1;
-
-			motion[0] = -motion[0]/2;
-			motion[1] = -motion[1]/2;
-			camPos += motion;
-			
+	
 			float zoomFactor = sqrtf(originalBB.getArea())/sqrtf(predator.currBB.getArea()) ;
-			
-			camPos *= RADIUS*zoomFactor/camPos.norm();
-			
+						
 			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -RADIUS*zoomFactor );
 
-			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW, FRAMEW/2, realWindowW);
-			head[1] = toCm(head[1] - 20, -FRAMEH/2, -realWindowH, FRAMEH/2, realWindowH);
+			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW/2, FRAMEW/2, realWindowW/2);
+			head[1] = toCm(head[1], -FRAMEH/2, -realWindowH/2, FRAMEH/2, realWindowH/2);
 
 			camPos = head;
 
-			
-			//printf("motion %.2f %.2f %.2f\n", motion[0], motion[1], zoomFactor);
 		}
 		else
 		{
@@ -283,7 +271,6 @@ void onMouseCB( int _event, int x, int y, int flags, void* param)
 
 void display(void)
 {
-	//printf("OLHA %f\n", predator.detector->baseScale);
 
 	acquireFrameAndProcess(0);
 	/* clear all pixels */
@@ -297,39 +284,23 @@ void display(void)
 
 	//Sets the camera position and orientation
 	
-	camPos[0] /= 2;
-	camPos[1] /= 2;
-	//gluLookAt(camPos[0],camPos[1],camPos[2],0,0,0,0,1,0);
 	gluLookAt(camPos[0],camPos[1],camPos[2], camPos[0],camPos[1],0,0,1,0);
 
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	double df = f - camPos[2];
-	//double n = -camPos[2] + 1;
 
-	//double x1 = (fx1 - camPos[0]/2)/n;
-	//double x2 = (fx2 - camPos[0]/2)/n;
-	//double y1 = (fy1 - camPos[1]/2)/n;
-	//double y2 = (fy2 - camPos[1]/2)/n;
-
-	double x1 = (fx1 + camPos[0]);///(fabs(camPos[2])/15);
-	double x2 = (fx2 + camPos[0]);///(fabs(camPos[2])/15);
-	double y1 = (fy1 - camPos[1]);////(fabs(camPos[2])/15);
-	double y2 = (fy2 - camPos[1]);///(fabs(camPos[2])/15);
+	double x1 = (fx1 + camPos[0]);
+	double x2 = (fx2 + camPos[0]);
+	double y1 = (fy1 - camPos[1]);
+	double y2 = (fy2 - camPos[1]);
 	
 	dn = fabs(camPos[2]);
-	df = 300 - fabs(camPos[2]);
 
-	//printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);
-	
-	//dn = (1/dn)*1000;
-
-	glFrustum(x1,x2,y1,y2,dn,f);
-
-
-
+	//printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);	
+	double df = f - camPos[2];
+	glFrustum(x1,x2,y1,y2,dn,df);
 
 
 	glMatrixMode(GL_MODELVIEW);
@@ -356,8 +327,8 @@ void display(void)
 	
 	//Sets the object position and orientation
 
-	//cube.draw();
-	m.draw();
+	cube.draw();
+	//m.draw();
 
 	surface0.draw();
 	surface1.draw();
@@ -369,10 +340,10 @@ void display(void)
 	/* don't wait!
 	* start processing buffered OpenGL routines
 	*/
-	//for(int i = 0; i < 256; i++) key[i] = false;
-	
+	//for(int i = 0; i < 256; i++) key[i] = false;	
 
 	glutSwapBuffers();
+	glutPostRedisplay();
 	
 }
 void init (void)
@@ -384,13 +355,9 @@ void init (void)
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	/* initialize viewing values */
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
+	glLoadIdentity();	
 	
-	
-	glFrustum(fx1,fx2,fy1,fy2,dn,f);
-	//gluPerspective(45.0, double(FRAMEW)/FRAMEH, 1, 800);
-	
+	glFrustum(fx1,fx2,fy1,fy2,dn,f);	
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -398,7 +365,7 @@ void init (void)
 	m.load("models/eagle.obj");
 
 	m.translation[2] = 50;
-	m.scaleFactor = 0.15f;
+	m.scaleFactor = 0.2f;
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -425,6 +392,7 @@ void deinit()
 {
 	delete [] key;
 }
+
 /*
 * Declare initial window size, position, and display mode
 * (single buffer and RGBA). Open window with "hello"
@@ -432,6 +400,7 @@ void deinit()
 * Register callback function to display graphics.
 * Enter main loop and process events.
 */
+
 int main(int argc, char** argv)
 {
 	atexit(deinit);
@@ -440,20 +409,16 @@ int main(int argc, char** argv)
 	glutInitWindowSize (FRAMEW, FRAMEH);
 	glutInitWindowPosition (100, 100);
 	glutCreateWindow ("Voxar - HeadTracker");
-	init ();
-
-	
+	init ();	
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyDown);
 	glutKeyboardUpFunc(keyUp);
-	glutIdleFunc(keyOp);
-
-	
-	
+	glutIdleFunc(keyOp);	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
 	glutFullScreen();
 	glutMainLoop();
+
 	return 0; /* ISO C requires main to return int. */
 }

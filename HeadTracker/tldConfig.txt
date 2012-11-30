@@ -1,6 +1,6 @@
 //Screen Resolution
 #FRAME_W=640
-#FRAME_H=480
+#FRAME_H=360
 #FPS=30
 
 //Fern Forest params

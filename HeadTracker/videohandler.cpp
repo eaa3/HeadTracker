@@ -32,6 +32,9 @@ void VideoHandler::config(int w, int h, bool frameBound, int maxFPS)
 	this->t0 = GetTickCount()/getTickFrequency();
 	this->tf = 0.0;
 	this->frameCounter = 0;
+
+	this->w = w;
+	this->h = h;
 }
 
 bool VideoHandler::acquire()
@@ -42,9 +45,12 @@ bool VideoHandler::acquire()
 
 	if( this->currentFrame.empty() ) return false;
 
-	//Mat temp;
-	//resize(this->currentFrame, temp, Size(this->h, this->h));
-	//this->currentFrame = temp;
+
+	Mat temp;
+	resize(this->currentFrame, temp, Size(this->w, this->h));
+
+	this->currentFrame = temp;
+
 	//this->frameControl();
 
 	return true;
