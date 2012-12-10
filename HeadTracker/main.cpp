@@ -13,14 +13,14 @@
 #include "tld/tld_util.h"
 
 const int FRAMEW = 640;
-const int FRAMEH = 360;
+const int FRAMEH = 480;//360;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-float RADIUS = 60.0f;
+float RADIUS = 20.0f;
 
-GLfloat realWindowW = 47.61f;
-GLfloat realWindowH = 26.77f;
+GLfloat realWindowW = 29.0f;//47.61f;
+GLfloat realWindowH = 15.4f;//26.77f;
 
 GLfloat fx1 = -realWindowW/2, fx2 = realWindowW/2, fy1 = -realWindowH/2, fy2 = realWindowH/2;
 GLfloat dn = RADIUS, f = 5*realWindowW;
@@ -134,6 +134,11 @@ void keyOp()
 
 	}
 
+	if( key[27] == 1 )
+	{
+		exit(0);
+	}
+
 
 	//glutPostRedisplay();
 	
@@ -180,7 +185,7 @@ void acquireFrameAndProcess(int value)
 	if( !tracking_started || (predator.currBB.valid && tracking_started)  ) draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
 	imshow(tldwindow_name,v.currentFrame);
 	
-	//printf("\rCamPos(%.2f,%.2f,%.2f)\r", camPos[0],camPos[1],camPos[2]);
+	printf("\rCamPos(%.2f,%.2f,%.2f)\r", camPos[0],camPos[1],camPos[2]);
 	
 	//glutSwapBuffers();
 
@@ -290,16 +295,19 @@ void display(void)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-
-	double x1 = (fx1 + camPos[0]);
-	double x2 = (fx2 + camPos[0]);
-	double y1 = (fy1 - camPos[1]);
-	double y2 = (fy2 - camPos[1]);
+	dn = 5;//fabs(camPos[2]);
+	double x1 = dn*(fx1 + camPos[0])/fabs(camPos[2]);
+	double x2 = dn*(fx2 + camPos[0])/fabs(camPos[2]);
+	double y1 = dn*(fy1 - camPos[1])/fabs(camPos[2]);
+	double y2 = dn*(fy2 - camPos[1])/fabs(camPos[2]);
 	
-	dn = fabs(camPos[2]);
+	
 
 	//printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);	
-	double df = f - camPos[2];
+	
+	
+	
+	double df = f;// - camPos[2];//currDst + diff; //- camPos[2];
 	glFrustum(x1,x2,y1,y2,dn,df);
 
 
@@ -308,6 +316,8 @@ void display(void)
 	lightPos2[0] = camPos[0];
 	lightPos2[1] = camPos[1];
 	lightPos2[2] = camPos[2];
+
+	
 
 	//Setting up lights
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
@@ -326,15 +336,35 @@ void display(void)
     glLightfv(GL_LIGHT2, GL_SPECULAR, lightPos2);
 	
 	//Sets the object position and orientation
+	
 
-	cube.draw();
-	//m.draw();
+	glPushMatrix();
 
+
+	glRotatef(-30, 1, 0, 0);
+	glRotatef(30, 0, 1, 0);
+	
+	glutWireTeapot(5);
+
+	glTranslatef(-10,-5, 10);
+
+	m.draw();
+	glutSolidCube(5);
+	
+	
+	
+
+	glPopMatrix();
+	
 	surface0.draw();
 	surface1.draw();
 	surface2.draw();
 	surface3.draw();
-	surface4.draw();
+	
+
+
+	
+	//surface4.draw();
 
 	
 	/* don't wait!
@@ -364,7 +394,7 @@ void init (void)
 
 	m.load("models/eagle.obj");
 
-	m.translation[2] = 50;
+	//m.translation[2] = 15;
 	m.scaleFactor = 0.2f;
 
 	glEnable(GL_DEPTH_TEST);
@@ -417,7 +447,7 @@ int main(int argc, char** argv)
 	glutIdleFunc(keyOp);	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
-	glutFullScreen();
+	//glutFullScreen();
 	glutMainLoop();
 
 	return 0; /* ISO C requires main to return int. */
