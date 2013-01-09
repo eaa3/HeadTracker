@@ -11,26 +11,32 @@
 #include "videohandler.h"
 #include "glsurface.h"
 #include "tld/tld_util.h"
+#include "FaceDetector.h"
 
 const int FRAMEW = 640;
-const int FRAMEH = 480;//360;
+const int FRAMEH = 360;//360;
 const string tldwindow_name = "TLD Frame View";
 const string tldroi_name = "TLD ROI View";
 
-float RADIUS = 20.0f;
+float RADIUS = 90.0f;
 
-GLfloat realWindowW = 29.0f;//47.61f;
-GLfloat realWindowH = 15.4f;//26.77f;
+GLfloat realWindowW = 47.61f; //29.0f;
+GLfloat realWindowH = 27.5f; //15.4f;
 
 GLfloat fx1 = -realWindowW/2, fx2 = realWindowW/2, fy1 = -realWindowH/2, fy2 = realWindowH/2;
-GLfloat dn = RADIUS, f = 5*realWindowW;
+GLfloat dn = RADIUS, f = 4*realWindowW;
+
+char* fname = "110.txt";
+FILE* file = NULL;
 
 using namespace tld;
 
+bool l0On = false, l1On = false, l2On = false;
 
 Model3D m;
 Params p(TLD_CONFIG_FILE);
 Predator predator(&p);
+FaceDetector faceDetector("c:/opencv/data/haarcascades/haarcascade_frontalface_alt.xml");
 VideoHandler v(p.frame_w, p.frame_h);
 Vector3 color = Vector3(0.3f,0.5f,0.3f);
 
@@ -38,12 +44,10 @@ glSurface surface0(realWindowW, f, 25, Vector3(0, fy2, 0), Vector3(0,0,0), color
 glSurface surface1(realWindowW, f, 25, Vector3(0, fy1, 0), Vector3(0,0,0), color, Vector3(0,1,0));
 glSurface surface2(realWindowH, f, 25, Vector3(fx1, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
 glSurface surface3(realWindowH, f, 25, Vector3(fx2, 0, 0), Vector3(0,0,90), color, Vector3(1,0,0));
-glSurface surface4(realWindowW, realWindowH, 30, Vector3(0, 0, f/2), Vector3(90,0,0), color, Vector3(0,0,-1));
-Cube cube(10);
 
 
 
-int* key = new int[256];
+int key[256];
 
 
 Vector3 originalCamPos(0,0, -RADIUS);
@@ -94,7 +98,7 @@ void keyUp(unsigned char keyCode, int x, int y)
 
 void keyOp()
 {
-	float d = 10;
+	float d = 5;
 	if( key['a'] == 1 ) camPos += Vector3(-d, 0, 0);
 	if( key['d'] == 1) camPos += Vector3(d, 0, 0);
 	if( key['w'] == 1) camPos += Vector3(0, -d, 0);
@@ -108,28 +112,28 @@ void keyOp()
 	int r = 5;
 
 	if( key['4'] == 1 ){
-		cube.angle[1]+=r;
-		m.angle[1] += r;
+	
+		m.angle[1] += r; 
 	}
 	if( key['6'] == 1 ){
-		cube.angle[1]-=r;
+	
 		m.angle[1] -= r;
 	}
 	if( key['8'] == 1 ){
-		cube.angle[0]+=r;
+	
 		m.angle[0]+=r;
 	}
 	if( key['2'] == 1 ){
-		cube.angle[0]-=r;
+	
 		m.angle[0]-=r;
 	}
 
 	if( key['+'] == 1 ){
-		cube.pos[2] +=r;
+
 		m.translation[2] +=r;
 	}
 	if( key['-'] == 1 ){
-		cube.pos[2] -=r;
+
 		m.translation[2] -=r;
 
 	}
@@ -137,6 +141,30 @@ void keyOp()
 	if( key[27] == 1 )
 	{
 		exit(0);
+	}
+
+
+	if ( key['b'] == 1 ) 
+	{
+			l0On? glDisable(GL_LIGHT0) : glEnable(GL_LIGHT0);
+
+			l0On = !l0On;
+	}
+    if ( key['n'] == 1 )
+	{
+		glEnable(GL_LIGHT1);
+
+		l1On? glDisable(GL_LIGHT1) : glEnable(GL_LIGHT1);
+
+		l1On = !l1On;
+	}
+    if( key['m'] == 1 ) 
+	{
+		glEnable(GL_LIGHT2);
+
+		l2On? glDisable(GL_LIGHT2) : glEnable(GL_LIGHT2);
+
+		l2On = !l2On;
 	}
 
 
@@ -159,30 +187,86 @@ void acquireFrameAndProcess(int value)
 		predator.processFrame(v.currentFrame);
 		selectedBB = predator.currBB;
 
+
+
+
+		if( !predator.currBB.valid )
+		{
+			faceDetector.detect(v.currentFrame);
+
+			if( faceDetector.detectionResult.size() )
+			{
+				predator.currBB = BoundingBox(faceDetector.detectionResult[0]);
+				predator.currBB.valid = true;
+			}
+		}
+
 		if( predator.currBB.valid )
 		{
-			Vector3 c1(predator.prevBB.x + float(predator.prevBB.w)/2, predator.prevBB.y + float(predator.prevBB.h)/2, 0);
-			Vector3 c2(predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
+			
+
+			Vector3 c2;
+			
+			c2 = Vector3(predator.currBB.x + float(predator.currBB.w)/2, predator.currBB.y + float(predator.currBB.h)/2, 0);
+			
+			
 	
-			float zoomFactor = sqrtf(originalBB.getArea())/sqrtf(predator.currBB.getArea()) ;
-						
-			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -RADIUS*zoomFactor );
+			float zoomFactor = sqrtf(originalBB.getArea())/sqrtf(predator.currBB.getArea());
+			
+
+			float z = -0.3756*predator.currBB.w + 126.73;
+
+			Vector3 head(c2[0] - FRAMEW/2, -(c2[1] - FRAMEH/2), -z );
+
+			//fprintf(file,"%d %d %f %f \n",predator.currBB.w, predator.currBB.h, RADIUS, -head[2]);
 
 			head[0] = toCm(head[0], -FRAMEW/2, -realWindowW/2, FRAMEW/2, realWindowW/2);
 			head[1] = toCm(head[1], -FRAMEH/2, -realWindowH/2, FRAMEH/2, realWindowH/2);
+
+			head[0] *= 1.0f;
+
+			head[1] *= 0.7f;
+
+			head[1] += realWindowH/2 - realWindowH*0.15;
+			//head[1] -=  realWindowW/2;
 
 			camPos = head;
 
 		}
 		else
 		{
-			camPos = originalCamPos;
+			//camPos = originalCamPos;
 		}
 		
 
 	}
 
+	
+
 	if( !tracking_started || (predator.currBB.valid && tracking_started)  ) draw_box(selectedBB, v.currentFrame, Scalar(255,0,0));
+	
+	if(  !tracking_started )
+	{
+		faceDetector.detect(v.currentFrame);
+
+		if( faceDetector.detectionResult.size() > 0 )
+		{
+
+			selectedBB = BoundingBox(faceDetector.detectionResult[0]);
+			originalBB = selectedBB;
+
+			predator.reset();
+			predator.selectObject(v.currentFrame, selectedBB);
+			grab_allowed = false;
+			grabbed = false;
+			tracking_started = true;
+		}
+
+		
+		
+		
+	}
+
 	imshow(tldwindow_name,v.currentFrame);
 	
 	printf("\rCamPos(%.2f,%.2f,%.2f)\r", camPos[0],camPos[1],camPos[2]);
@@ -295,20 +379,20 @@ void display(void)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	dn = 5;//fabs(camPos[2]);
+	dn = 1.0f;
 	double x1 = dn*(fx1 + camPos[0])/fabs(camPos[2]);
 	double x2 = dn*(fx2 + camPos[0])/fabs(camPos[2]);
 	double y1 = dn*(fy1 - camPos[1])/fabs(camPos[2]);
 	double y2 = dn*(fy2 - camPos[1])/fabs(camPos[2]);
 	
-	
+	double df = f;
+	glFrustum(x1,x2,y1,y2,dn,df);
 
 	//printf("\rFrustum(%.2f,%.2f,%.2f,%.2f,%.2f,%.2f) CamPos(%.2f,%.2f,%.2f)", x1,x2,y1,y2,dn,df, camPos[0],camPos[1],camPos[2]);	
 	
 	
 	
-	double df = f;// - camPos[2];//currDst + diff; //- camPos[2];
-	glFrustum(x1,x2,y1,y2,dn,df);
+	
 
 
 	glMatrixMode(GL_MODELVIEW);
@@ -341,15 +425,59 @@ void display(void)
 	glPushMatrix();
 
 
-	glRotatef(-30, 1, 0, 0);
-	glRotatef(30, 0, 1, 0);
+	//glRotatef(-30, 1, 0, 0);
+	//glRotatef(30, 0, 1, 0);
 	
-	glutWireTeapot(5);
 
-	glTranslatef(-10,-5, 10);
+
+	glutSolidCube(5);
+
+	glPushMatrix();
+
+	glutSolidCube(5);
+
+	glPopMatrix();
+
+
+
+	glPushMatrix();
+	glTranslatef(-10,-10, 20);
+
+	glutWireTeapot(5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-50,-5, 50);
+
+	glRotatef(30, 1, 1, 0);
 
 	m.draw();
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(20,-10, 30);
+
+	glColor3f(1,0,0);
+
 	glutSolidCube(5);
+
+	glTranslatef(-30,20, -40);
+
+	glColor3f(0,0,1);
+	glutSolidCube(5);
+
+	glTranslatef(15,-5, 0);
+
+	glColor3f(0,1,0);
+	glutSolidCube(5);
+
+	glPopMatrix();
+
+	
+
+
+	
 	
 	
 	
@@ -378,9 +506,6 @@ void display(void)
 }
 void init (void)
 {
-	
-	cube.pos[2] = f/2 - 2*cube.edge;
-
 	/* select clearing (background) color */
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	/* initialize viewing values */
@@ -403,9 +528,7 @@ void init (void)
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_LIGHTING);
 	
-	glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
-    glEnable(GL_LIGHT2);
+	
 
 
 	glEnable(GL_NORMALIZE);
@@ -416,13 +539,17 @@ void init (void)
 
 	grabbed = tracking_started = selected = false;
 	grab_allowed = true;
+
+
+	file = fopen(fname,"w");
 }
+
 
 void deinit()
 {
-	delete [] key;
-}
 
+	fclose(file);
+}
 /*
 * Declare initial window size, position, and display mode
 * (single buffer and RGBA). Open window with "hello"
@@ -433,21 +560,20 @@ void deinit()
 
 int main(int argc, char** argv)
 {
-	atexit(deinit);
 	glutInit(&argc, argv);
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize (FRAMEW, FRAMEH);
 	glutInitWindowPosition (100, 100);
 	glutCreateWindow ("Voxar - HeadTracker");
 	init ();	
-
+	atexit(deinit);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyDown);
 	glutKeyboardUpFunc(keyUp);
 	glutIdleFunc(keyOp);	
 
 	setMouseCallback(tldwindow_name, onMouseCB, &v.currentFrame);
-	//glutFullScreen();
+	glutFullScreen();
 	glutMainLoop();
 
 	return 0; /* ISO C requires main to return int. */
